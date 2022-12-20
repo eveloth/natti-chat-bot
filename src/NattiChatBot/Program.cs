@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using NattiChatBot;
 using NattiChatBot.Controllers;
 using NattiChatBot.Services;
@@ -42,6 +43,12 @@ builder.Services
     .AddNewtonsoftJson();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 // Construct webhook route from the Route configuration parameter
 // It is expected that BotController has single method accepting Update
 app.MapBotWebhookRoute<BotController>(route: botConfiguration.Route);
