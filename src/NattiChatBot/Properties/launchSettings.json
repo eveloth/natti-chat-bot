@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "Telegram.Bot.Examples.WebHook": {
+    "NattiChatBot": {
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
