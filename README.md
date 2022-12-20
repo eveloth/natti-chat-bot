@@ -11,9 +11,9 @@ sudo docker pull eveloth/natti-chat-bot:{specify-tag}
 sudo docker run \
   --name natti-chat-bot \
   -d \
-  -e "BotConfiguration:BotToken={your-token} \
-  -e "BotConfiguration:HostAddress={your-domain} \
-  -e "BotConfiguration:SecretToken={e.g.-random-guid} \
+  -e "BotConfiguration:BotToken={your-token}" \
+  -e "BotConfiguration:HostAddress={your-domain}" \
+  -e "BotConfiguration:SecretToken={e.g.-random-guid}" \
   -p 443:443 \
   eveloth/natti-chat-bot:{specify-tag}
 ```
