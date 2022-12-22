@@ -1,7 +1,11 @@
+using Hangfire;
+using Hangfire.Redis;
 using Microsoft.AspNetCore.HttpOverrides;
 using NattiChatBot;
 using NattiChatBot.Controllers;
+using NattiChatBot.Jobs;
 using NattiChatBot.Services;
+using StackExchange.Redis;
 using Telegram.Bot;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,16 +22,32 @@ var botConfiguration = botConfigurationSection.Get<BotConfiguration>();
 // More read:
 //  https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests#typed-clients
 //  https://docs.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests
-builder.Services.AddHttpClient("telegram_bot_client")
-                .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
-                {
-                    BotConfiguration? botConfig = sp.GetConfiguration<BotConfiguration>();
-                    TelegramBotClientOptions options = new(botConfig.BotToken);
-                    return new TelegramBotClient(options, httpClient);
-                });
+builder.Services
+    .AddHttpClient("telegram_bot_client")
+    .AddTypedClient<ITelegramBotClient>(
+        (httpClient, sp) =>
+        {
+            BotConfiguration? botConfig = sp.GetConfiguration<BotConfiguration>();
+            TelegramBotClientOptions options = new(botConfig.BotToken);
+            return new TelegramBotClient(options, httpClient);
+        }
+    );
 
-// Dummy business-logic service
+var options = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("RedisHangfire")!);
+options.Password = builder.Configuration["Redis:Password"];
+var redis = ConnectionMultiplexer.Connect(options);
+builder.Services.AddHangfire(configuration =>
+{
+    configuration.UseRedisStorage(redis, new RedisStorageOptions
+    {
+        Db = 5,
+    });
+});
+
+builder.Services.AddHangfireServer();
+
 builder.Services.AddScoped<UpdateHandlers>();
+builder.Services.AddScoped<ICounterAlertJob, CounterAlertJob>();
 
 // There are several strategies for completing asynchronous tasks during startup.
 // Some of them could be found in this article https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-1/
@@ -38,21 +58,24 @@ builder.Services.AddHostedService<ConfigureWebhook>();
 // incoming webhook updates and send serialized responses back.
 // Read more about adding Newtonsoft.Json to ASP.NET Core pipeline:
 //   https://docs.microsoft.com/en-us/aspnet/core/web-api/advanced/formatting?view=aspnetcore-6.0#add-newtonsoftjson-based-json-format-support
-builder.Services
-    .AddControllers()
-    .AddNewtonsoftJson();
+builder.Services.AddControllers().AddNewtonsoftJson();
 
 var app = builder.Build();
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
+app.UseForwardedHeaders(
+    new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    }
+);
+
+app.UseHangfireDashboard();
 
 // Construct webhook route from the Route configuration parameter
 // It is expected that BotController has single method accepting Update
 app.MapBotWebhookRoute<BotController>(route: botConfiguration.Route);
 app.MapControllers();
+app.MapHangfireDashboard();
 app.Run();
 
 #pragma warning disable CA1050 // Declare types in namespaces
@@ -69,5 +92,7 @@ namespace NattiChatBot
         public string HostAddress { get; init; } = default!;
         public string Route { get; init; } = default!;
         public string SecretToken { get; init; } = default!;
+        public long ChatId { get; init; }
+        public long? EntitledUserId { get; init; }
     }
 }

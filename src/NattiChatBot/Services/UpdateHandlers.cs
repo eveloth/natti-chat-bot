@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Options;
+using NattiChatBot.Jobs;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace NattiChatBot.Services;
 
@@ -8,11 +11,20 @@ public class UpdateHandlers
 {
     private readonly ITelegramBotClient _botClient;
     private readonly ILogger<UpdateHandlers> _logger;
+    private readonly BotConfiguration _botConfig;
+    private readonly ICounterAlertJob _counterAlertJob;
 
-    public UpdateHandlers(ITelegramBotClient botClient, ILogger<UpdateHandlers> logger)
+    public UpdateHandlers(
+        ITelegramBotClient botClient,
+        ILogger<UpdateHandlers> logger,
+        IOptions<BotConfiguration> botOptions,
+        ICounterAlertJob counterAlertJob
+    )
     {
         _botClient = botClient;
         _logger = logger;
+        _counterAlertJob = counterAlertJob;
+        _botConfig = botOptions.Value;
     }
 
     public Task HandleErrorAsync(Exception exception, CancellationToken cancellationToken)
@@ -43,12 +55,52 @@ public class UpdateHandlers
     {
         _logger.LogInformation("Receive message type: {MessageType}", message.Type);
 
+        var chatId = message.Chat.Id;
+
+        if (chatId != _botConfig.ChatId)
+        {
+            return;
+        }
+
+        Counters.MessagesCount++;
+        Console.WriteLine(Counters.MessagesCount);
+
         if (message.NewChatMembers is not null)
         {
             await WelcomeToTheUnion(_botClient, message, cancellationToken);
+            Counters.NewMembersCount++;
+            return;
         }
 
-        static async Task WelcomeToTheUnion(
+        if (message.Text is not { } messageText|| message.From is not { } sender)
+        {
+            return;
+        }
+
+        var isAdmin =
+            (
+                await _botClient.GetChatMemberAsync(
+                    message.Chat.Id,
+                    sender.Id,
+                    cancellationToken: cancellationToken
+                )
+            ).Status == ChatMemberStatus.Administrator;
+        var isEntitled =
+            _botConfig.EntitledUserId is { } entitledUserId && entitledUserId == sender.Id;
+
+        var action = messageText switch
+        {
+            "/enable_counter" => _counterAlertJob.EnableCounters(),
+            "/disable_counter" => _counterAlertJob.DisableCounters(),
+            _ => Task.CompletedTask
+        };
+
+        if (isAdmin || isEntitled)
+        {
+            await action;
+        }
+
+        async Task WelcomeToTheUnion(
             ITelegramBotClient botClient,
             Message message,
             CancellationToken cancellationToken
@@ -58,7 +110,7 @@ public class UpdateHandlers
                 "CAACAgIAAxkBAAEbKPNjoO0h4FTT4cvD48JH5oiva1TfMgACwQADRvjVB5h6U1iKJsQ4LAQ"
             );
             await botClient.SendStickerAsync(
-                message.Chat.Id,
+                chatId,
                 sticker,
                 replyToMessageId: message.MessageId,
                 cancellationToken: cancellationToken
