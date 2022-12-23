@@ -63,7 +63,6 @@ public class UpdateHandlers
         }
 
         Counters.MessagesCount++;
-        Console.WriteLine(Counters.MessagesCount);
 
         if (message.NewChatMembers is not null)
         {
@@ -72,7 +71,7 @@ public class UpdateHandlers
             return;
         }
 
-        if (message.Text is not { } messageText|| message.From is not { } sender)
+        if (message.Text is not { } messageText || message.From is not { } sender)
         {
             return;
         }
