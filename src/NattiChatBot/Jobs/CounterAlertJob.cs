@@ -37,7 +37,7 @@ public class CounterAlertJob : ICounterAlertJob
                 + "и сколько сообщений вы написали!"
         );
 
-        RecurringJob.AddOrUpdate("alert", () => SendAlert(), "0 0 * * *");
+        RecurringJob.AddOrUpdate("alert", () => SendAlert(), "0 21 * * *");
         _logger.LogInformation(
             "Started counter at {DateTime} for chat ID {ChatId}",
             DateTime.Now,
