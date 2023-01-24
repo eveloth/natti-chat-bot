@@ -13,17 +13,18 @@ public class UpdateHandlers
     private readonly ILogger<UpdateHandlers> _logger;
     private readonly BotConfiguration _botConfig;
     private readonly ICounterAlertJob _counterAlertJob;
+    private readonly CommandExecutor _commandExecutor;
 
     public UpdateHandlers(
         ITelegramBotClient botClient,
         ILogger<UpdateHandlers> logger,
         IOptions<BotConfiguration> botOptions,
-        ICounterAlertJob counterAlertJob
-    )
+        ICounterAlertJob counterAlertJob, CommandExecutor commandExecutor)
     {
         _botClient = botClient;
         _logger = logger;
         _counterAlertJob = counterAlertJob;
+        _commandExecutor = commandExecutor;
         _botConfig = botOptions.Value;
     }
 
@@ -84,19 +85,31 @@ public class UpdateHandlers
                     cancellationToken: cancellationToken
                 )
             ).Status == ChatMemberStatus.Administrator;
+
         var isEntitled =
             _botConfig.EntitledUserId is { } entitledUserId && entitledUserId == sender.Id;
 
-        var action = messageText switch
+        var adminAction = messageText switch
         {
             "/enable_counter" => _counterAlertJob.EnableCounters(),
             "/disable_counter" => _counterAlertJob.DisableCounters(),
             _ => Task.CompletedTask
         };
 
+        var regularAction = messageText switch
+        {
+            "/stats" => _commandExecutor.SendStats(message, cancellationToken),
+            _ => Task.CompletedTask
+        };
+
         if (isAdmin || isEntitled)
         {
-            await action;
+            await adminAction;
+            await regularAction;
+        }
+        else
+        {
+            await regularAction;
         }
 
         async Task WelcomeToTheUnion(

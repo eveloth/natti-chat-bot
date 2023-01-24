@@ -11,14 +11,14 @@ services:
     build: ./src/NattiChatBot
     restart: unless-stopped
     ports:
-      - "${BOT_PORT}:80"
+      - "127.0.0.1:${BOT_PORT}:80"
     depends_on:
       - "redis-db"
     networks:
       - local-chatbot
     env_file:
       - .env
-      - bot-config.env
+      - .env.bot
 
   redis-db:
     container_name: redis
@@ -27,7 +27,7 @@ services:
       --requirepass ${Redis__Password}
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT}:6379"
+      - "127.0.0.1:${REDIS_PORT}:6379"
     volumes:
       - /opt/natti-chat-bot/redis:/data
     networks:

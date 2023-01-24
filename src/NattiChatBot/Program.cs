@@ -47,6 +47,7 @@ builder.Services.AddHangfire(configuration =>
 builder.Services.AddHangfireServer();
 
 builder.Services.AddScoped<UpdateHandlers>();
+builder.Services.AddScoped<CommandExecutor>();
 builder.Services.AddScoped<ICounterAlertJob, CounterAlertJob>();
 
 // There are several strategies for completing asynchronous tasks during startup.
