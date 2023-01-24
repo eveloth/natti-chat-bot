@@ -18,7 +18,7 @@ services:
       - local-chatbot
     env_file:
       - .env
-      - bot-config.env
+      - .env.bot
 
   redis-db:
     container_name: redis
