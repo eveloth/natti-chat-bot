@@ -3,13 +3,17 @@ using Hangfire.Redis;
 using Microsoft.AspNetCore.HttpOverrides;
 using NattiChatBot;
 using NattiChatBot.Controllers;
+using NattiChatBot.Installers;
 using NattiChatBot.Jobs;
 using NattiChatBot.Services;
+using Serilog;
 using StackExchange.Redis;
 using Telegram.Bot;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
+
+builder.InstallSerilog();
 
 // Setup Bot configuration
 var botConfigurationSection = builder.Configuration.GetSection(BotConfiguration.Configuration);
@@ -69,6 +73,8 @@ app.UseForwardedHeaders(
         ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
     }
 );
+
+app.UseSerilogRequestLogging();
 
 app.UseHangfireDashboard();
 
