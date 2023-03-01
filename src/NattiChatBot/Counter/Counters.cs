@@ -1,4 +1,4 @@
-namespace NattiChatBot;
+namespace NattiChatBot.Counter;
 
 public static class Counters
 {

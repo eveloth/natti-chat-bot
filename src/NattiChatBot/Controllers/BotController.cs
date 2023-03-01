@@ -12,9 +12,18 @@ public class BotController : ControllerBase
     public async Task<IActionResult> Post(
         [FromBody] Update update,
         [FromServices] UpdateHandlers handleUpdateService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        await handleUpdateService.HandleUpdateAsync(update, cancellationToken);
+        try
+        {
+            await handleUpdateService.HandleUpdateAsync(update, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            await handleUpdateService.HandleErrorAsync(e, cancellationToken);
+        }
+
         return Ok();
     }
 }

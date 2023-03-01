@@ -1,5 +1,6 @@
 using Hangfire;
 using Microsoft.Extensions.Options;
+using NattiChatBot.Counter;
 using Telegram.Bot;
 
 namespace NattiChatBot.Jobs;

@@ -40,6 +40,8 @@ builder.Services
 var options = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("RedisHangfire")!);
 options.Password = builder.Configuration["Redis:Password"];
 var redis = ConnectionMultiplexer.Connect(options);
+builder.Services.AddSingleton(redis);
+
 builder.Services.AddHangfire(configuration =>
 {
     configuration.UseRedisStorage(redis, new RedisStorageOptions
@@ -58,6 +60,7 @@ builder.Services.AddScoped<ICounterAlertJob, CounterAlertJob>();
 // Some of them could be found in this article https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-1/
 // We are going to use IHostedService to add and later remove Webhook
 builder.Services.AddHostedService<ConfigureWebhook>();
+builder.Services.AddHostedService<RedisBackupService>();
 
 // The Telegram.Bot library heavily depends on Newtonsoft.Json library to deserialize
 // incoming webhook updates and send serialized responses back.

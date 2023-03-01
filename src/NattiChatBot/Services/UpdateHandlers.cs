@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using NattiChatBot.Counter;
 using NattiChatBot.Jobs;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -37,7 +38,7 @@ public class UpdateHandlers
             _ => exception.ToString()
         };
 
-        _logger.LogInformation("HandleError: {ErrorMessage}", errorMessage);
+        _logger.LogError("HandleError: {ErrorMessage}", errorMessage);
         return Task.CompletedTask;
     }
 
