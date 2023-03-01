@@ -21,7 +21,7 @@ public class BotController : ControllerBase
         }
         catch (Exception e)
         {
-            await handleUpdateService.HandleErrorAsync(e, cancellationToken);
+            await handleUpdateService.HandleErrorAsync(e);
         }
 
         return Ok();
