@@ -72,7 +72,7 @@ public class CounterAlertJob : ICounterAlertJob
     {
         await _botClient.SendTextMessageAsync(
             _botConfig.ChatId,
-            "Так держать, товарищи!\n "
+            "Так держать, товарищи!\n"
                 + $"Сегодня вы написали {Counters.MessagesCount} сообщений, "
                 + $"и нас стало больше на {Counters.NewMembersCount} человек!"
         );

@@ -20,7 +20,9 @@ public class UpdateHandlers
         ITelegramBotClient botClient,
         ILogger<UpdateHandlers> logger,
         IOptions<BotConfiguration> botOptions,
-        ICounterAlertJob counterAlertJob, CommandExecutor commandExecutor)
+        ICounterAlertJob counterAlertJob,
+        CommandExecutor commandExecutor
+    )
     {
         _botClient = botClient;
         _logger = logger;
@@ -29,7 +31,7 @@ public class UpdateHandlers
         _botConfig = botOptions.Value;
     }
 
-    public Task HandleErrorAsync(Exception exception, CancellationToken cancellationToken)
+    public Task HandleErrorAsync(Exception exception)
     {
         var errorMessage = exception switch
         {
@@ -55,9 +57,9 @@ public class UpdateHandlers
 
     private async Task BotOnMessageReceived(Message message, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Receive message type: {MessageType}", message.Type);
-
         var chatId = message.Chat.Id;
+
+        _logger.LogInformation("Received a new message from chat ID {ChatId}", chatId);
 
         if (chatId != _botConfig.ChatId)
         {
@@ -78,22 +80,11 @@ public class UpdateHandlers
             return;
         }
 
-        var isAdmin =
-            (
-                await _botClient.GetChatMemberAsync(
-                    message.Chat.Id,
-                    sender.Id,
-                    cancellationToken: cancellationToken
-                )
-            ).Status == ChatMemberStatus.Administrator;
-
-        var isEntitled =
-            _botConfig.EntitledUserId is { } entitledUserId && entitledUserId == sender.Id;
-
         var adminAction = messageText switch
         {
             "/enable_counter" => _counterAlertJob.EnableCounters(),
             "/disable_counter" => _counterAlertJob.DisableCounters(),
+            "/stats" => _commandExecutor.SendStats(message, cancellationToken),
             _ => Task.CompletedTask
         };
 
@@ -103,31 +94,50 @@ public class UpdateHandlers
             _ => Task.CompletedTask
         };
 
-        if (isAdmin || isEntitled)
+        if (await IsAdminOrIsEntitled(chatId, sender.Id, cancellationToken))
         {
             await adminAction;
-            await regularAction;
-        }
-        else
-        {
-            await regularAction;
+            return;
         }
 
-        async Task WelcomeToTheUnion(
-            ITelegramBotClient botClient,
-            Message message,
-            CancellationToken cancellationToken
-        )
-        {
-            var sticker = new InputFileId(
-                "CAACAgIAAxkBAAEbKPNjoO0h4FTT4cvD48JH5oiva1TfMgACwQADRvjVB5h6U1iKJsQ4LAQ"
-            );
-            await botClient.SendStickerAsync(
-                chatId,
-                sticker,
-                replyToMessageId: message.MessageId,
-                cancellationToken: cancellationToken
-            );
-        }
+        await regularAction;
+    }
+
+    private static async Task WelcomeToTheUnion(
+        ITelegramBotClient botClient,
+        Message message,
+        CancellationToken cancellationToken
+    )
+    {
+        var sticker = new InputFileId(
+            "CAACAgIAAxkBAAEbKPNjoO0h4FTT4cvD48JH5oiva1TfMgACwQADRvjVB5h6U1iKJsQ4LAQ"
+        );
+        await botClient.SendStickerAsync(
+            message.Chat.Id,
+            sticker,
+            replyToMessageId: message.MessageId,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private async Task<bool> IsAdminOrIsEntitled(
+        long chatId,
+        long userId,
+        CancellationToken cancellationToken
+    )
+    {
+        var isAdmin =
+            (
+                await _botClient.GetChatMemberAsync(
+                    chatId,
+                    userId,
+                    cancellationToken: cancellationToken
+                )
+            ).Status == ChatMemberStatus.Administrator;
+
+        var isEntitled =
+            _botConfig.EntitledUserId is { } entitledUserId && entitledUserId == userId;
+
+        return isAdmin || isEntitled;
     }
 }
