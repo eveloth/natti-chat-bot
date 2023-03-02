@@ -110,7 +110,7 @@ public class UpdateHandlers
     )
     {
         var sticker = new InputFileId(
-            "CAACAgIAAxkBAAEbKPNjoO0h4FTT4cvD48JH5oiva1TfMgACwQADRvjVB5h6U1iKJsQ4LAQ"
+            "CAACAgIAAxkBAAEd4MRkAAHF-I_k4mJ1rllGCfTni3KaXE4AAqAhAALwdQABSHwyPDT3fCyULgQ"
         );
         await botClient.SendStickerAsync(
             message.Chat.Id,
