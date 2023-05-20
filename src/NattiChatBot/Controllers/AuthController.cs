@@ -22,7 +22,7 @@ namespace NattiChatBot.Controllers
         {
             var existingToken = await _tokenService.Get(token, ct);
 
-            return existingToken is null ? Ok() : Unauthorized();
+            return existingToken is null ? Unauthorized() : Ok();
         }
     }
 }

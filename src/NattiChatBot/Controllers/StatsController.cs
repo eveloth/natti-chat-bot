@@ -2,6 +2,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using NattiChatBot.Contracts.Queries;
 using NattiChatBot.Data.Filters;
+using NattiChatBot.Domain;
 using NattiChatBot.Domain.Enums;
 using NattiChatBot.Filters;
 using NattiChatBot.Services.Interfaces;
@@ -23,6 +24,7 @@ namespace NattiChatBot.Controllers
 
         [HttpGet]
         [ValitatePfzToken(AccessType.User)]
+        [ProducesResponseType(typeof(List<Stats>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll(
             [FromQuery] StatsFilterQuery filterQuery,
             CancellationToken ct
@@ -36,6 +38,9 @@ namespace NattiChatBot.Controllers
         [HttpGet]
         [Route("{date:datetime}")]
         [ValitatePfzToken(AccessType.User)]
+        [ProducesResponseType(typeof(Stats), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Get([FromRoute] DateTime date, CancellationToken ct)
         {
             var dateOnly = DateOnly.FromDateTime(date);

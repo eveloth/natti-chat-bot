@@ -30,6 +30,7 @@ namespace NattiChatBot.Controllers
 
         [HttpGet]
         [ValitatePfzToken(AccessType.Admin)]
+        [ProducesResponseType(typeof(IEnumerable<Token>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {
             var tokens = await _tokenService.GetAll(ct);
@@ -38,6 +39,8 @@ namespace NattiChatBot.Controllers
 
         [HttpPost]
         [ValitatePfzToken(AccessType.Admin)]
+        [ProducesResponseType(typeof(Token), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Add([FromBody] TokenRequest request, CancellationToken ct)
         {
             await _validator.ValidateAndThrowAsync(request, ct);
@@ -51,6 +54,9 @@ namespace NattiChatBot.Controllers
         [HttpPut]
         [Route("{id:long}")]
         [ValitatePfzToken(AccessType.Admin)]
+        [ProducesResponseType(typeof(Token), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Update(
             [FromRoute] long id,
             [FromBody] TokenRequest request,
@@ -69,6 +75,8 @@ namespace NattiChatBot.Controllers
         [HttpDelete]
         [Route("{id:long}")]
         [ValitatePfzToken(AccessType.Admin)]
+        [ProducesResponseType(typeof(Token), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromRoute] long id, CancellationToken ct)
         {
             await _tokenService.Delete(id, ct);

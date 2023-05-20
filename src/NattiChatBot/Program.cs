@@ -86,6 +86,9 @@ builder.Services.AddHostedService<RedisBackupService>();
 // Read more about adding Newtonsoft.Json to ASP.NET Core pipeline:
 //   https://docs.microsoft.com/en-us/aspnet/core/web-api/advanced/formatting?view=aspnetcore-6.0#add-newtonsoftjson-based-json-format-support
 builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddRouting(routeOptions => routeOptions.LowercaseUrls = true);
+builder.Services.AddEndpointsApiExplorer();
+builder.InstallSwagger();
 
 var app = builder.Build();
 
@@ -126,6 +129,8 @@ app.UseHangfireDashboard();
 app.MapBotWebhookRoute<BotController>(route: botConfiguration.Route);
 app.MapControllers();
 app.MapHangfireDashboard();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
