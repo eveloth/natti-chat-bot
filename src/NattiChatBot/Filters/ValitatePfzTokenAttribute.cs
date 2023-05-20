@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NattiChatBot.Domain;
 using NattiChatBot.Domain.Enums;
 using NattiChatBot.Services.Interfaces;
 
@@ -37,14 +38,17 @@ public class ValitatePfzTokenAttribute : Attribute, IAsyncActionFilter
         var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
         var token = await tokenService.Get(secretTokenHeader!, CancellationToken.None);
 
-        var isTokenValid = token?.AccessType.HasFlag(_accessType);
+        var isTokenValid =
+            token?.AccessType.HasFlag(_accessType) & token?.ExpiresAt > DateTime.UtcNow;
 
         if (isTokenValid is null or false)
         {
-            context.Result = new ObjectResult("Insufficient priveleges") { StatusCode = 403 };
+            context.Result = new ObjectResult("Insufficient priveleges or token is invalid")
+            {
+                StatusCode = 403
+            };
             return;
         }
-
         await next();
     }
 }
