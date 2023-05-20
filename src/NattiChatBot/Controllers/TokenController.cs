@@ -75,7 +75,7 @@ namespace NattiChatBot.Controllers
         [HttpDelete]
         [Route("{id:long}")]
         [ValitatePfzToken(AccessType.Admin)]
-        [ProducesResponseType(typeof(Token), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromRoute] long id, CancellationToken ct)
         {

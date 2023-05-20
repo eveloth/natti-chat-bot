@@ -18,6 +18,7 @@ namespace NattiChatBot.Controllers
 
         [HttpPost]
         [Route("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Login(string token, CancellationToken ct)
         {
             var existingToken = await _tokenService.Get(token, ct);
