@@ -1,3 +1,6 @@
 namespace NattiChatBot.Domain;
 
-public record Stats(long Id, DateOnly Date, int NewMembersCount, int MessagesCount);
+public record Stats(DateOnly Date, int NewMembersCount, int MessagesCount)
+{
+    public long Id { get; set; }
+}

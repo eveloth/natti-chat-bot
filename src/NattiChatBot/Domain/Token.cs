@@ -26,7 +26,7 @@ public record Token
         AccessToken = accessToken;
     }
 
-    public long Id { get; init; }
+    public long Id { get; set; }
     public string AccessToken { get; init; }
     public DateTime IssuedAt { get; init; }
     public DateTime ExpiresAt { get; set; }

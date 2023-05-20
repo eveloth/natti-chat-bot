@@ -1,5 +1,7 @@
+using FluentValidation;
 using Hangfire;
 using Hangfire.Redis;
+using MapsterMapper;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using NattiChatBot;
@@ -10,6 +12,7 @@ using NattiChatBot.Jobs;
 using NattiChatBot.Options;
 using NattiChatBot.Services;
 using NattiChatBot.Services.Interfaces;
+using NattiChatBot.Validation;
 using Serilog;
 using StackExchange.Redis;
 using Telegram.Bot;
@@ -56,10 +59,13 @@ builder.Services.AddSingleton(redis);
 builder.InstallPersistenceLayer();
 builder.Services.AddScoped<IStatsService, StatsService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddValidatorsFromAssemblyContaining<TokenValidator>();
+builder.Services.AddSingleton<IMapper, Mapper>();
 
 builder.Services.AddHangfire(configuration =>
 {
-    configuration.UseRedisStorage(redis, new RedisStorageOptions { Db = 5, });
+    configuration.UseRedisStorage(redis, new RedisStorageOptions { Db = 5 });
+    configuration.UseColouredConsoleLogProvider();
 });
 
 builder.Services.AddHangfireServer();

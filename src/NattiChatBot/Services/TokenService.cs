@@ -17,9 +17,14 @@ public class TokenService : ITokenService
         _logger = logger;
     }
 
-    public async Task<List<Token>> Get(CancellationToken ct)
+    public async Task<List<Token>> GetAll(CancellationToken ct)
     {
         return await _db.Tokens.ToListAsync(ct);
+    }
+
+    public async Task<Token?> Get(string token, CancellationToken ct)
+    {
+        return await _db.Tokens.Where(x => x.AccessToken == token).SingleOrDefaultAsync(ct);
     }
 
     public async Task Add(Token token, CancellationToken ct)
