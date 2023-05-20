@@ -21,7 +21,7 @@ public class ValitatePfzTokenAttribute : Attribute, IAsyncActionFilter
     )
     {
         var isTokenProvided = context.HttpContext.Request.Headers.TryGetValue(
-            "X-Telegram-Bot-Api-Secret-Token",
+            "X-Pfz-Token",
             out var secretTokenHeader
         );
 

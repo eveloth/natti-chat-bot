@@ -27,7 +27,7 @@ public class TokenService : ITokenService
         return await _db.Tokens.Where(x => x.AccessToken == token).SingleOrDefaultAsync(ct);
     }
 
-    public async Task Add(Token token, CancellationToken ct)
+    public async Task<Token> Add(Token token, CancellationToken ct)
     {
         var existingToken = await _db.Tokens
             .Where(x => x.AccessToken == token.AccessToken)
@@ -47,9 +47,11 @@ public class TokenService : ITokenService
             token.GrantedTo,
             token.AccessType
         );
+
+        return token;
     }
 
-    public async Task Update(Token token, CancellationToken ct)
+    public async Task<Token> Update(Token token, CancellationToken ct)
     {
         var existingToken = await _db.Tokens.FindAsync(token.Id, ct);
 
@@ -69,6 +71,8 @@ public class TokenService : ITokenService
             token.GrantedTo,
             token.AccessType
         );
+
+        return existingToken;
     }
 
     public async Task Delete(long id, CancellationToken ct)

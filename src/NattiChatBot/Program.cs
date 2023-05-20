@@ -9,6 +9,7 @@ using NattiChatBot.Controllers;
 using NattiChatBot.Data;
 using NattiChatBot.Installers;
 using NattiChatBot.Jobs;
+using NattiChatBot.Middleware;
 using NattiChatBot.Options;
 using NattiChatBot.Services;
 using NattiChatBot.Services.Interfaces;
@@ -125,6 +126,8 @@ app.UseHangfireDashboard();
 app.MapBotWebhookRoute<BotController>(route: botConfiguration.Route);
 app.MapControllers();
 app.MapHangfireDashboard();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 await app.RunAsync();
 
