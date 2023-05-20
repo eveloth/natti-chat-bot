@@ -1,7 +1,20 @@
+using NattiChatBot.Domain.Enums;
+
 namespace NattiChatBot.Domain;
 
-public record Token(DateTime IssuedAt, DateTime ExpiresAt, string GrantedTo, AccessType AccessType)
+public record Token
 {
+    public Token() { }
+
+    public Token(DateTime issuedAt, DateTime expiresAt, string grantedTo, AccessType accessType)
+    {
+        IssuedAt = issuedAt;
+        ExpiresAt = expiresAt;
+        GrantedTo = grantedTo;
+        AccessType = accessType;
+        AccessToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+    }
+
     public Token(
         DateTime issuedAt,
         DateTime expiresAt,
@@ -14,7 +27,11 @@ public record Token(DateTime IssuedAt, DateTime ExpiresAt, string GrantedTo, Acc
     }
 
     public long Id { get; init; }
-    public string AccessToken { get; init; } = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+    public string AccessToken { get; init; }
+    public DateTime IssuedAt { get; init; }
+    public DateTime ExpiresAt { get; set; }
+    public string GrantedTo { get; set; }
+    public AccessType AccessType { get; init; }
 
     public static Token GenerateDefaultToken(string accessToken, AccessType accessType)
     {

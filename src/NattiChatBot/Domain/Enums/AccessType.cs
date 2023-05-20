@@ -1,4 +1,4 @@
-namespace NattiChatBot.Domain;
+namespace NattiChatBot.Domain.Enums;
 
 [Flags]
 public enum AccessType

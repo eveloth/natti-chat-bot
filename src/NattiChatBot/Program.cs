@@ -9,6 +9,7 @@ using NattiChatBot.Installers;
 using NattiChatBot.Jobs;
 using NattiChatBot.Options;
 using NattiChatBot.Services;
+using NattiChatBot.Services.Interfaces;
 using Serilog;
 using StackExchange.Redis;
 using Telegram.Bot;
@@ -53,6 +54,8 @@ var redis = ConnectionMultiplexer.Connect(options);
 builder.Services.AddSingleton(redis);
 
 builder.InstallPersistenceLayer();
+builder.Services.AddScoped<IStatsService, StatsService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddHangfire(configuration =>
 {

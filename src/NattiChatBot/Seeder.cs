@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NattiChatBot.Data;
 using NattiChatBot.Domain;
+using NattiChatBot.Domain.Enums;
 using NattiChatBot.Options;
 
 namespace NattiChatBot;

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using NattiChatBot.Domain;
+using NattiChatBot.Domain.Enums;
 using NattiChatBot.Options;
 
 #pragma warning disable CA1050 // Declare types in namespaces
