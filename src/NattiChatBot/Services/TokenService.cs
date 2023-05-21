@@ -10,11 +10,17 @@ public class TokenService : ITokenService
 {
     private readonly BotContext _db;
     private readonly ILogger<TokenService> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public TokenService(BotContext db, ILogger<TokenService> logger)
+    public TokenService(
+        BotContext db,
+        ILogger<TokenService> logger,
+        IHttpContextAccessor httpContextAccessor
+    )
     {
         _db = db;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<List<Token>> GetAll(CancellationToken ct)
@@ -85,6 +91,13 @@ public class TokenService : ITokenService
             return;
         }
 
+        var requestInitialtorToken = GetRequestTinitatorToken();
+
+        if (existingToken.AccessToken == requestInitialtorToken)
+        {
+            throw new ApiException("Token cannot be deleted by self-approve");
+        }
+
         _db.Tokens.Remove(existingToken);
         await _db.SaveChangesAsync(ct);
 
@@ -93,5 +106,10 @@ public class TokenService : ITokenService
             existingToken.Id,
             existingToken.GrantedTo
         );
+    }
+
+    private string GetRequestTinitatorToken()
+    {
+        return _httpContextAccessor.HttpContext.Request.Headers["X-Pfz-Token"];
     }
 }

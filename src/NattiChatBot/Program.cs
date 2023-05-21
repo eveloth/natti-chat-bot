@@ -98,6 +98,7 @@ builder.Services.AddCors(
         })
 );
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.InstallSwagger();
 
