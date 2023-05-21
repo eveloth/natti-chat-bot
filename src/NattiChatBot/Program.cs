@@ -87,6 +87,17 @@ builder.Services.AddHostedService<RedisBackupService>();
 //   https://docs.microsoft.com/en-us/aspnet/core/web-api/advanced/formatting?view=aspnetcore-6.0#add-newtonsoftjson-based-json-format-support
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddRouting(routeOptions => routeOptions.LowercaseUrls = true);
+
+builder.Services.AddCors(
+    corsOptions =>
+        corsOptions.AddDefaultPolicy(policyBuilder =>
+        {
+            policyBuilder.AllowAnyOrigin();
+            policyBuilder.AllowAnyHeader();
+            policyBuilder.AllowAnyMethod();
+        })
+);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.InstallSwagger();
 
@@ -98,6 +109,8 @@ app.UseForwardedHeaders(
         ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
     }
 );
+
+app.UseCors();
 
 using (var scope = app.Services.CreateScope())
 {

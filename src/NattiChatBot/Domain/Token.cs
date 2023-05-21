@@ -4,7 +4,11 @@ namespace NattiChatBot.Domain;
 
 public record Token
 {
-    public Token() { }
+    public Token()
+    {
+        AccessToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        IssuedAt = DateTime.UtcNow;
+    }
 
     public Token(DateTime issuedAt, DateTime expiresAt, string grantedTo, AccessType accessType)
     {
@@ -12,7 +16,6 @@ public record Token
         ExpiresAt = expiresAt;
         GrantedTo = grantedTo;
         AccessType = accessType;
-        AccessToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
     }
 
     public Token(
@@ -21,7 +24,8 @@ public record Token
         string grantedTo,
         string accessToken,
         AccessType accessType
-    ) : this(issuedAt, expiresAt, grantedTo, accessType)
+    )
+        : this(issuedAt, expiresAt, grantedTo, accessType)
     {
         AccessToken = accessToken;
     }
@@ -31,7 +35,7 @@ public record Token
     public DateTime IssuedAt { get; init; }
     public DateTime ExpiresAt { get; set; }
     public string GrantedTo { get; set; }
-    public AccessType AccessType { get; init; }
+    public AccessType AccessType { get; set; }
 
     public static Token GenerateDefaultToken(string accessToken, AccessType accessType)
     {

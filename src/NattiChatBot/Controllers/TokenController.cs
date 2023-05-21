@@ -45,9 +45,10 @@ namespace NattiChatBot.Controllers
         {
             await _validator.ValidateAndThrowAsync(request, ct);
 
-            var token = _mapper.Map<Token>(request);
-
+            var token = new Token();
+            _mapper.Map(request, token);
             var createdToken = await _tokenService.Add(token, ct);
+
             return CreatedAtAction(nameof(Add), createdToken);
         }
 

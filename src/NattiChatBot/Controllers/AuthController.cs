@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using NattiChatBot.Contracts.Requests;
 using NattiChatBot.Services.Interfaces;
 
 namespace NattiChatBot.Controllers
@@ -19,9 +20,9 @@ namespace NattiChatBot.Controllers
         [HttpPost]
         [Route("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> Login(string token, CancellationToken ct)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
         {
-            var existingToken = await _tokenService.Get(token, ct);
+            var existingToken = await _tokenService.Get(request.AccessToken, ct);
 
             return existingToken is null ? Unauthorized() : Ok();
         }

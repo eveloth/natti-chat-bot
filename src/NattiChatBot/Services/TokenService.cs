@@ -62,6 +62,7 @@ public class TokenService : ITokenService
 
         existingToken.ExpiresAt = token.ExpiresAt;
         existingToken.GrantedTo = token.GrantedTo;
+        existingToken.AccessType = token.AccessType;
         await _db.SaveChangesAsync(ct);
 
         _logger.LogInformation(

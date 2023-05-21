@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 using NattiChatBot.Exceptions;
 using Npgsql;
 
@@ -36,7 +36,11 @@ public class ErrorHandlingMiddleware
         }
         catch (ValidationException e)
         {
-            var err = e.ValidationResult.ErrorMessage;
+            var err = e.Errors.Aggregate(
+                "",
+                (current, error) => current + error.ErrorMessage + "\n"
+            );
+
             _logger.LogError(err);
 
             context.Response.StatusCode = 400;
