@@ -9,6 +9,7 @@ using NattiChatBot.Controllers;
 using NattiChatBot.Data;
 using NattiChatBot.Installers;
 using NattiChatBot.Jobs;
+using NattiChatBot.Mapping;
 using NattiChatBot.Middleware;
 using NattiChatBot.Options;
 using NattiChatBot.Services;
@@ -112,6 +113,8 @@ app.UseForwardedHeaders(
 );
 
 app.UseCors();
+
+app.ConfigureMapping();
 
 using (var scope = app.Services.CreateScope())
 {
