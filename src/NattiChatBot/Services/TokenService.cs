@@ -91,7 +91,7 @@ public class TokenService : ITokenService
             return;
         }
 
-        var requestInitialtorToken = GetRequestTinitatorToken();
+        var requestInitialtorToken = GetRequestInitatorToken();
 
         if (existingToken.AccessToken == requestInitialtorToken)
         {
@@ -108,8 +108,8 @@ public class TokenService : ITokenService
         );
     }
 
-    private string GetRequestTinitatorToken()
+    private string GetRequestInitatorToken()
     {
-        return _httpContextAccessor.HttpContext.Request.Headers["X-Pfz-Token"];
+        return _httpContextAccessor.HttpContext!.GetPfzToken();
     }
 }

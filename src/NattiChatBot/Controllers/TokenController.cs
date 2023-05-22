@@ -83,5 +83,16 @@ namespace NattiChatBot.Controllers
             await _tokenService.Delete(id, ct);
             return NoContent();
         }
+
+        [HttpGet]
+        [Route("info")]
+        [ValitatePfzToken(AccessType.User)]
+        [ProducesResponseType(typeof(Token), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetTokenInfo(CancellationToken ct)
+        {
+            var requestInitiatorToken = HttpContext.GetPfzToken();
+            var existingToken = await _tokenService.Get(requestInitiatorToken, ct);
+            return Ok(existingToken);
+        }
     }
 }

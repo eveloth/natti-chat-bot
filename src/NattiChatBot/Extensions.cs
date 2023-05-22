@@ -35,17 +35,8 @@ public static class Extensions
         );
     }
 
-    public static Token GenerateDefaultToken(this Token token, DefaultAdminTokenOptions _defautToken)
+    public static string GetPfzToken(this HttpContext ctx)
     {
-        var now = DateTime.UtcNow;
-        var expires = now.AddMonths(3);
-
-        return new Token(
-            now,
-            expires,
-            "admin",
-            _defautToken.AccessToken,
-            Enum.Parse<AccessType>(_defautToken.AccessType)
-        );
+        return ctx.Request.Headers["X-Pfz-Token"]!;
     }
 }
