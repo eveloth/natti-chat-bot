@@ -1,6 +1,8 @@
 using Hangfire;
 using Microsoft.Extensions.Options;
 using NattiChatBot.Counter;
+using NattiChatBot.Domain;
+using NattiChatBot.Services.Interfaces;
 using Telegram.Bot;
 
 namespace NattiChatBot.Jobs;
@@ -10,15 +12,18 @@ public class CounterAlertJob : ICounterAlertJob
     private readonly ITelegramBotClient _botClient;
     private readonly BotConfiguration _botConfig;
     private readonly ILogger<CounterAlertJob> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
     public CounterAlertJob(
         ITelegramBotClient botClient,
         IOptions<BotConfiguration> botOptions,
-        ILogger<CounterAlertJob> logger
+        ILogger<CounterAlertJob> logger,
+        IServiceProvider serviceProvider
     )
     {
         _botClient = botClient;
         _logger = logger;
+        _serviceProvider = serviceProvider;
         _botConfig = botOptions.Value;
     }
 
@@ -70,18 +75,30 @@ public class CounterAlertJob : ICounterAlertJob
 
     public async Task SendAlert()
     {
+        var newMembers = Counters.NewMembersCount;
+        var messages = Counters.MessagesCount;
+        var now = DateTime.UtcNow;
+
         await _botClient.SendTextMessageAsync(
             _botConfig.ChatId,
-            "Так держать, товарищи!\n"
-                + $"Сегодня вы написали {Counters.MessagesCount} сообщений, "
-                + $"и нас стало больше на {Counters.NewMembersCount} человек!"
+            "Так держать, товарищи!\n "
+                + $"Сегодня вы написали {messages} сообщений, "
+                + $"и нас стало больше на {newMembers} человек!"
         );
+
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var statsService = scope.ServiceProvider.GetRequiredService<IStatsService>();
+
+            var stats = new Stats(DateOnly.FromDateTime(now), newMembers, messages);
+            await statsService.Add(stats, CancellationToken.None);
+        }
 
         _logger.LogInformation(
             "Sent alert: {NewMembers} new members, {Messages} messages at {DateTime}",
-            Counters.NewMembersCount,
-            Counters.MessagesCount,
-            DateTime.Now
+            newMembers,
+            messages,
+            now
         );
 
         Counters.ResetCounters();

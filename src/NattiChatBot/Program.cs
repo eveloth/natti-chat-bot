@@ -1,11 +1,20 @@
+using FluentValidation;
 using Hangfire;
 using Hangfire.Redis;
+using MapsterMapper;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using NattiChatBot;
 using NattiChatBot.Controllers;
+using NattiChatBot.Data;
 using NattiChatBot.Installers;
 using NattiChatBot.Jobs;
+using NattiChatBot.Mapping;
+using NattiChatBot.Middleware;
+using NattiChatBot.Options;
 using NattiChatBot.Services;
+using NattiChatBot.Services.Interfaces;
+using NattiChatBot.Validation;
 using Serilog;
 using StackExchange.Redis;
 using Telegram.Bot;
@@ -18,6 +27,11 @@ builder.InstallSerilog();
 // Setup Bot configuration
 var botConfigurationSection = builder.Configuration.GetSection(BotConfiguration.Configuration);
 builder.Services.Configure<BotConfiguration>(botConfigurationSection);
+
+var adminTokenConfiguration = builder.Configuration.GetSection(
+    DefaultAdminTokenOptions.DefaultAdminToken
+);
+builder.Services.Configure<DefaultAdminTokenOptions>(adminTokenConfiguration);
 
 var botConfiguration = botConfigurationSection.Get<BotConfiguration>();
 
@@ -37,17 +51,23 @@ builder.Services
         }
     );
 
-var options = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("RedisHangfire")!);
+var options = ConfigurationOptions.Parse(
+    builder.Configuration.GetConnectionString("RedisHangfire")!
+);
 options.Password = builder.Configuration["Redis:Password"];
 var redis = ConnectionMultiplexer.Connect(options);
 builder.Services.AddSingleton(redis);
 
+builder.InstallPersistenceLayer();
+builder.Services.AddScoped<IStatsService, StatsService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddValidatorsFromAssemblyContaining<TokenValidator>();
+builder.Services.AddSingleton<IMapper, Mapper>();
+
 builder.Services.AddHangfire(configuration =>
 {
-    configuration.UseRedisStorage(redis, new RedisStorageOptions
-    {
-        Db = 5,
-    });
+    configuration.UseRedisStorage(redis, new RedisStorageOptions { Db = 5 });
+    configuration.UseColouredConsoleLogProvider();
 });
 
 builder.Services.AddHangfireServer();
@@ -67,6 +87,21 @@ builder.Services.AddHostedService<RedisBackupService>();
 // Read more about adding Newtonsoft.Json to ASP.NET Core pipeline:
 //   https://docs.microsoft.com/en-us/aspnet/core/web-api/advanced/formatting?view=aspnetcore-6.0#add-newtonsoftjson-based-json-format-support
 builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddRouting(routeOptions => routeOptions.LowercaseUrls = true);
+
+builder.Services.AddCors(
+    corsOptions =>
+        corsOptions.AddDefaultPolicy(policyBuilder =>
+        {
+            policyBuilder.AllowAnyOrigin();
+            policyBuilder.AllowAnyHeader();
+            policyBuilder.AllowAnyMethod();
+        })
+);
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddEndpointsApiExplorer();
+builder.InstallSwagger();
 
 var app = builder.Build();
 
@@ -77,6 +112,31 @@ app.UseForwardedHeaders(
     }
 );
 
+app.UseCors();
+
+app.ConfigureMapping();
+
+using (var scope = app.Services.CreateScope())
+{
+    var botContext = scope.ServiceProvider.GetRequiredService<BotContext>();
+    botContext.Database.Migrate();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<Seeder>();
+
+    try
+    {
+        await seeder.InitializeDefaultToken();
+    }
+    catch (Exception)
+    {
+        Log.Fatal("DATABASE SEEDING FAILED");
+        throw;
+    }
+}
+
 app.UseSerilogRequestLogging();
 
 app.UseHangfireDashboard();
@@ -86,7 +146,12 @@ app.UseHangfireDashboard();
 app.MapBotWebhookRoute<BotController>(route: botConfiguration.Route);
 app.MapControllers();
 app.MapHangfireDashboard();
-app.Run();
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
+
+await app.RunAsync();
 
 #pragma warning disable CA1050 // Declare types in namespaces
 #pragma warning disable RCS1110 // Declare type inside namespace.
