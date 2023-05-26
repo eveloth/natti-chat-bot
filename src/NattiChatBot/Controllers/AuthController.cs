@@ -20,14 +20,18 @@ namespace NattiChatBot.Controllers
         }
 
         [HttpPost]
-        [ValitatePfzToken(AccessType.Admin)]
         [Route("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
+        public async Task<IActionResult> Login(
+            [FromBody] LoginRequest request,
+            CancellationToken ct
+        )
         {
             var existingToken = await _tokenService.Get(request.AccessToken, ct);
 
-            return existingToken is null ? Unauthorized() : Ok();
+            return existingToken is null || !existingToken.AccessType.HasFlag(AccessType.Admin)
+                ? Unauthorized()
+                : Ok();
         }
     }
 }
