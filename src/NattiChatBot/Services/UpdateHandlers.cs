@@ -80,25 +80,26 @@ public class UpdateHandlers
             return;
         }
 
-        var adminAction = messageText switch
+        if (await IsAdminOrIsEntitled(chatId, sender.Id, cancellationToken))
         {
-            "/enable_counter" => _counterAlertJob.EnableCounters(),
-            "/disable_counter" => _counterAlertJob.DisableCounters(),
-            "/stats" => _commandExecutor.SendStats(message, cancellationToken),
-            _ => Task.CompletedTask
-        };
+            var adminAction = messageText switch
+            {
+                "/enable_counter" => _counterAlertJob.EnableCounters(),
+                "/disable_counter" => _counterAlertJob.DisableCounters(),
+                "/stats" => _commandExecutor.SendStats(message, cancellationToken),
+                _ => Task.CompletedTask
+            };
+
+            await adminAction;
+
+            return;
+        }
 
         var regularAction = messageText switch
         {
             "/stats" => _commandExecutor.SendStats(message, cancellationToken),
             _ => Task.CompletedTask
         };
-
-        if (await IsAdminOrIsEntitled(chatId, sender.Id, cancellationToken))
-        {
-            await adminAction;
-            return;
-        }
 
         await regularAction;
     }

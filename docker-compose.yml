@@ -4,6 +4,9 @@ networks:
   local-chatbot:
     name: local-chatbot
 
+volumes:
+  natti-chat-bot-pg:
+
 services:
   natti-chat-bot:
     container_name: natti-chat-bot
@@ -30,6 +33,22 @@ services:
       - "127.0.0.1:${REDIS_PORT}:6379"
     volumes:
       - /opt/natti-chat-bot/redis:/data
+    networks:
+      - local-chatbot
+
+  postgres:
+    container_name: postgres-chat-bot
+    image: postgres:15
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_HOST:-127.0.0.1}:${POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_DB: "${PG_DB:-natti_chat_bot_db}"
+      POSTGRES_USER: "${PG_USER}"
+      POSTGRES_PASSWORD: "${PG_PASS}"
+      PGDATA: "/var/lib/pgsql/data"
+    volumes:
+      - natti-chat-bot-pg:/var/lib/pgsql/data
     networks:
       - local-chatbot
 

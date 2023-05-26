@@ -5,6 +5,7 @@ using Telegram.Bot.Types;
 
 namespace NattiChatBot.Controllers;
 
+[ApiExplorerSettings(IgnoreApi = true)]
 public class BotController : ControllerBase
 {
     [HttpPost]
