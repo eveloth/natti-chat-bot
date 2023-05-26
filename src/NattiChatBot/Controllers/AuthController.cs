@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NattiChatBot.Contracts.Requests;
+using NattiChatBot.Domain.Enums;
+using NattiChatBot.Filters;
 using NattiChatBot.Services.Interfaces;
 
 namespace NattiChatBot.Controllers
@@ -18,6 +20,7 @@ namespace NattiChatBot.Controllers
         }
 
         [HttpPost]
+        [ValitatePfzToken(AccessType.Admin)]
         [Route("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
