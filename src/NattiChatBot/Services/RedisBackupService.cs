@@ -45,7 +45,6 @@ public class RedisBackupService : IHostedService
         Counters.Enabled = true;
         Counters.MessagesCount = backup.MessagesCount;
         Counters.NewMembersCount = backup.NewMembersCount;
-        Counters.Enabled = false;
         _logger.LogInformation("App restored its state, proceeding");
     }
 
