@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using NattiChatBot.Counter;
 using NattiChatBot.Jobs;
+using NattiChatBot.Options;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
@@ -15,19 +16,22 @@ public class UpdateHandlers
     private readonly BotConfiguration _botConfig;
     private readonly ICounterAlertJob _counterAlertJob;
     private readonly CommandExecutor _commandExecutor;
+    private readonly ChatConfigOptions _chatConfig;
 
     public UpdateHandlers(
         ITelegramBotClient botClient,
         ILogger<UpdateHandlers> logger,
         IOptions<BotConfiguration> botOptions,
         ICounterAlertJob counterAlertJob,
-        CommandExecutor commandExecutor
+        CommandExecutor commandExecutor,
+        IOptionsSnapshot<ChatConfigOptions> chatConfig
     )
     {
         _botClient = botClient;
         _logger = logger;
         _counterAlertJob = counterAlertJob;
         _commandExecutor = commandExecutor;
+        _chatConfig = chatConfig.Value;
         _botConfig = botOptions.Value;
     }
 
@@ -104,15 +108,13 @@ public class UpdateHandlers
         await regularAction;
     }
 
-    private static async Task WelcomeToTheUnion(
+    private async Task WelcomeToTheUnion(
         ITelegramBotClient botClient,
         Message message,
         CancellationToken cancellationToken
     )
     {
-        var sticker = new InputFileId(
-            "CAACAgIAAxkBAAEbKPNjoO0h4FTT4cvD48JH5oiva1TfMgACwQADRvjVB5h6U1iKJsQ4LAQ"
-        );
+        var sticker = new InputFileId($"{_chatConfig.StickerId}");
         await botClient.SendStickerAsync(
             message.Chat.Id,
             sticker,
