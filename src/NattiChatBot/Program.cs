@@ -31,10 +31,10 @@ builder.Services.Configure<BotConfiguration>(botConfigurationSection);
 var adminTokenConfiguration = builder.Configuration.GetSection(
     DefaultAdminTokenOptions.DefaultAdminToken
 );
+builder.Services.Configure<DefaultAdminTokenOptions>(adminTokenConfiguration);
 
 var chatConfig = builder.Configuration.GetSection(ChatConfigOptions.ChatConfig);
-
-builder.Services.Configure<DefaultAdminTokenOptions>(chatConfig);
+builder.Services.Configure<ChatConfigOptions>(chatConfig);
 
 var botConfiguration = botConfigurationSection.Get<BotConfiguration>();
 
