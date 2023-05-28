@@ -39,7 +39,7 @@ public class StatsController : ControllerBase
     [HttpGet]
     [Route("current")]
     [ValitatePfzToken(AccessType.User)]
-    [ProducesResponseType(typeof(Stats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CurrentStatsResponse), StatusCodes.Status200OK)]
     public IActionResult Get(CancellationToken ct)
     {
         var stats = _statsService.GetCurrent();
