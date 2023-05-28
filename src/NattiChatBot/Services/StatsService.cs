@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using NattiChatBot.Counter;
 using NattiChatBot.Data;
 using NattiChatBot.Data.Filters;
 using NattiChatBot.Domain;
-using NattiChatBot.Exceptions;
 using NattiChatBot.Services.Interfaces;
 
 namespace NattiChatBot.Services;
@@ -35,14 +35,13 @@ public class StatsService : IStatsService
         return await statsCollection.ToListAsync(ct);
     }
 
-    public async Task<Stats?> Get(DateOnly date, CancellationToken ct)
+    public Stats GetCurrent()
     {
-        var stats = await _db.Stats.Where(x => x.Date == date).SingleOrDefaultAsync(ct);
-
-        if (stats is null)
-        {
-            throw new ApiException("Stats not found");
-        }
+        var stats = new Stats(
+            DateOnly.FromDateTime(DateTime.UtcNow + TimeSpan.FromHours(3)),
+            Counters.NewMembersCount,
+            Counters.MessagesCount
+        );
 
         return stats;
     }

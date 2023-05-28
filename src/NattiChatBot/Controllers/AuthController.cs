@@ -4,34 +4,33 @@ using NattiChatBot.Domain.Enums;
 using NattiChatBot.Filters;
 using NattiChatBot.Services.Interfaces;
 
-namespace NattiChatBot.Controllers
+namespace NattiChatBot.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class AuthController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AuthController : ControllerBase
+    private readonly ITokenService _tokenService;
+    private readonly ILogger<AuthController> _logger;
+
+    public AuthController(ITokenService tokenService, ILogger<AuthController> logger)
     {
-        private readonly ITokenService _tokenService;
-        private readonly ILogger<AuthController> _logger;
+        _tokenService = tokenService;
+        _logger = logger;
+    }
 
-        public AuthController(ITokenService tokenService, ILogger<AuthController> logger)
-        {
-            _tokenService = tokenService;
-            _logger = logger;
-        }
+    [HttpPost]
+    [Route("login")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequest request,
+        CancellationToken ct
+    )
+    {
+        var existingToken = await _tokenService.Get(request.AccessToken, ct);
 
-        [HttpPost]
-        [Route("login")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> Login(
-            [FromBody] LoginRequest request,
-            CancellationToken ct
-        )
-        {
-            var existingToken = await _tokenService.Get(request.AccessToken, ct);
-
-            return existingToken is null || !existingToken.AccessType.HasFlag(AccessType.Admin)
-                ? Unauthorized()
-                : Ok();
-        }
+        return existingToken is null || !existingToken.AccessType.HasFlag(AccessType.Admin)
+            ? Unauthorized()
+            : Ok();
     }
 }
