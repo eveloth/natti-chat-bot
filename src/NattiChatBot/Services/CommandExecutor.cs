@@ -1,6 +1,7 @@
 using NattiChatBot.Counter;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace NattiChatBot.Services;
 
@@ -29,6 +30,7 @@ public class CommandExecutor
             message.Chat.Id,
             replyText,
             replyToMessageId: message.MessageId,
+            parseMode: ParseMode.Html,
             cancellationToken: cancellationToken
         );
     }
