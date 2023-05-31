@@ -22,7 +22,8 @@ public class CommandExecutor
         var replyText =
             "Статистика выполнения плана по профсоюзу на данный момент:\n\n"
             + $"\u2709 {Counters.MessagesCount} сообщений\n"
-            + $"\U0001f195 {Counters.NewMembersCount} новых участников";
+            + $"\U0001f195 {Counters.NewMembersCount} новых участников\n\n"
+            + "<a href=\"https://natttti.vercel.app/\">Посмотреть на дашборде</a>";
 
         await _botClient.SendTextMessageAsync(
             message.Chat.Id,
