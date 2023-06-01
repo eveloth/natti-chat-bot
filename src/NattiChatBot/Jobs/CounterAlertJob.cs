@@ -4,6 +4,7 @@ using NattiChatBot.Counter;
 using NattiChatBot.Domain;
 using NattiChatBot.Services.Interfaces;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 
 namespace NattiChatBot.Jobs;
 
@@ -83,7 +84,9 @@ public class CounterAlertJob : ICounterAlertJob
             _botConfig.ChatId,
             "Так держать, товарищи!\n "
                 + $"Сегодня вы написали {messages} сообщений, "
-                + $"и нас стало больше на {newMembers} человек!"
+                + $"и нас стало больше на {newMembers} человек!\n\n"
+                + "<a href=\"https://natttti.vercel.app/\">Посмотреть на дашборде</a>",
+            parseMode: ParseMode.Html
         );
 
         using (var scope = _serviceProvider.CreateScope())
