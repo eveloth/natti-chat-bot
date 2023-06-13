@@ -84,6 +84,15 @@ public class UpdateHandlers
             return;
         }
 
+        if (
+            _chatConfig.BannedWords.Any(
+                x => message.Text.Contains(x, StringComparison.OrdinalIgnoreCase)
+            )
+        )
+        {
+            await _botClient.DeleteMessageAsync(chatId, message.MessageId, cancellationToken);
+        }
+
         if (await IsAdminOrIsEntitled(chatId, sender.Id, cancellationToken))
         {
             var adminAction = messageText switch
